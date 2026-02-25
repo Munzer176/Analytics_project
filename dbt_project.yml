@@ -39,10 +39,10 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   analytics_project:
-    # Applies to all files under models/staging/
     staging:
+      +schema: s_munzeralawad
       +materialized: table
-    # Applies to all files under models/prep/
     prep:
+      +schema: s_munzeralawad
       +materialized: table
   
