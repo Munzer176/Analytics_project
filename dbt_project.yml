@@ -38,13 +38,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 
 models:
-  analytics_project:
-    # Applies to all files under models/staging/
+  my_new_project:
     staging:
       +materialized: table
-    # Applies to all files under models/prep/
     prep:
       +materialized: table
-    # Applies to all files under models/mart/
     mart:
       +materialized: table
+  
