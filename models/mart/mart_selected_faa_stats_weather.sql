@@ -6,7 +6,7 @@ WITH airport_stats AS (
         COUNT(DISTINCT f.airline) AS unique_airlines,
         SUM(CASE WHEN f.cancelled = 1 THEN 1 ELSE 0 END) AS cancelled_departures,
         SUM(CASE WHEN f.diverted = 1 THEN 1 ELSE 0 END) AS diverted_departures
-    FROM {{ ref('prep_flights') }} f
+    FROM s_munzeralawad.prep_flights f
     GROUP BY f.origin
 )
 SELECT
@@ -19,13 +19,13 @@ SELECT
     s.unique_airlines,
     s.cancelled_departures,
     s.diverted_departures,
-    w.daily_min_temp,
-    w.daily_max_temp,
-    w.daily_precipitation,
-    w.daily_snowfall,
-    w.daily_avg_wind_speed,
-    w.daily_avg_wind_dir,
-    w.daily_peak_wind
+    w.min_temp_c AS daily_min_temp,
+    w.max_temp_c AS daily_max_temp,
+    w.precipitation_mm AS daily_precipitation,
+    w.max_snow_mm AS daily_snowfall,
+    w.avg_wind_speed_kmh AS daily_avg_wind_speed,
+    w.avg_wind_direction AS daily_avg_wind_dir,
+    w.wind_peakgust_kmh AS daily_peak_wind
 FROM airport_stats s
-LEFT JOIN {{ ref('prep_airports') }} a ON s.airport = a.faa
-LEFT JOIN {{ ref('prep_weather_daily') }} w ON a.faa = w.faa
+LEFT JOIN s_munzeralawad.prep_airports a ON s.airport = a.faa
+LEFT JOIN s_munzeralawad.prep_weather_daily w ON s.airport = w.station_id::text
