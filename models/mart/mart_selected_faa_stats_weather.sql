@@ -1,36 +1,31 @@
-WITH daily_airport_stats AS (
+WITH airport_stats AS (
     SELECT
-        origin AS airport_code,
+        f.origin AS airport,
         COUNT(*) AS total_departures,
-        COUNT(DISTINCT tail_number) AS unique_planes,
-        COUNT(DISTINCT airline) AS unique_airlines,
-        SUM(CASE WHEN cancelled = 1 THEN 1 ELSE 0 END) AS total_cancelled,
-        SUM(CASE WHEN diverted = 1 THEN 1 ELSE 0 END) AS total_diverted,
-        SUM(CASE WHEN cancelled = 0 AND diverted = 0 THEN 1 ELSE 0 END) AS total_occurred
-    FROM {{ ref('prep_flights') }}
-    GROUP BY origin
-),
-weather_daily AS (
-    SELECT *
-    FROM {{ ref('prep_weather_daily') }}
+        COUNT(DISTINCT f.tail_number) AS unique_planes,
+        COUNT(DISTINCT f.airline) AS unique_airlines,
+        SUM(CASE WHEN f.cancelled = 1 THEN 1 ELSE 0 END) AS cancelled_departures,
+        SUM(CASE WHEN f.diverted = 1 THEN 1 ELSE 0 END) AS diverted_departures
+    FROM {{ ref('prep_flights') }} f
+    GROUP BY f.origin
 )
 SELECT
-    a.airport_code,
-    w.date,
-    a.total_departures,
-    a.unique_planes,
-    a.unique_airlines,
-    a.total_cancelled,
-    a.total_diverted,
-    a.total_occurred,
-    w.avg_temp_c,
-    w.min_temp_c,
-    w.max_temp_c,
-    w.precipitation_mm,
-    w.max_snow_mm,
-    w.avg_wind_direction,
-    w.avg_wind_speed_kmh,
-    w.wind_peakgust_kmh
-FROM daily_airport_stats a
-LEFT JOIN weather_daily w
-    ON a.airport_code = w.airport_code
+    a.faa,
+    a.name,
+    a.city,
+    a.country,
+    s.total_departures,
+    s.unique_planes,
+    s.unique_airlines,
+    s.cancelled_departures,
+    s.diverted_departures,
+    w.daily_min_temp,
+    w.daily_max_temp,
+    w.daily_precipitation,
+    w.daily_snowfall,
+    w.daily_avg_wind_speed,
+    w.daily_avg_wind_dir,
+    w.daily_peak_wind
+FROM airport_stats s
+LEFT JOIN {{ ref('prep_airports') }} a ON s.airport = a.faa
+LEFT JOIN {{ ref('prep_weather_daily') }} w ON a.faa = w.faa

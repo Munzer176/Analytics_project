@@ -1,22 +1,10 @@
-WITH daily AS (
-    SELECT *
-    FROM {{ ref('prep_weather_daily') }}
-),
-weekly_agg AS (
-    SELECT
-        airport_code,
-        DATE_TRUNC('week', date) AS week_start,
-        AVG(avg_temp_c) AS avg_temp_c,
-        MIN(min_temp_c) AS min_temp_c,
-        MAX(max_temp_c) AS max_temp_c,
-        SUM(precipitation_mm) AS total_precipitation_mm,
-        SUM(max_snow_mm) AS total_snow_mm,
-        AVG(avg_wind_direction) AS avg_wind_direction,
-        AVG(avg_wind_speed_kmh) AS avg_wind_speed_kmh,
-        MAX(wind_peakgust_kmh) AS max_wind_peakgust_kmh
-    FROM daily
-    GROUP BY airport_code, DATE_TRUNC('week', date)
-)
-SELECT *
-FROM weekly_agg
-ORDER BY airport_code, week_start;
+SELECT
+    date_trunc('week', w.date) AS week_start,
+    AVG(w.daily_min_temp) AS avg_min_temp,
+    AVG(w.daily_max_temp) AS avg_max_temp,
+    SUM(w.daily_precipitation) AS total_precipitation,
+    SUM(w.daily_snowfall) AS total_snowfall,
+    AVG(w.daily_avg_wind_speed) AS avg_wind_speed
+FROM {{ ref('prep_weather_daily') }} w
+GROUP BY 1
+ORDER BY 1
